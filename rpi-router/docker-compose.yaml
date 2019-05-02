@@ -1,8 +1,25 @@
 version: '2'
 services:
-  router:
-    build: ./router
-    #image: nmaas87/rpi-openwrt:trunk_rpi3
+  router-admin:
+    build: ./router-admin
     network_mode: host
+    #privileged: true
+    ports:
+      - "10000:10000"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+  dhcp-server:
+    build: ./dhcp
     privileged: true
+    network_mode: host   
+    environment: 
+      - IFACE=eth2
+
+  # # https://github.com/blacktop/docker-zeek/blob/master/docs/usage.md
+  # ids:
+  #   image: blacktop/zeek
+  #   volume:
+
+
     
