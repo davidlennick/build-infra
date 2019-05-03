@@ -31,6 +31,7 @@ RUN mkdir /app
 COPY start.sh /app
 COPY fixeth.py /app
 COPY iptables.sh /app
+
 EXPOSE 10000
 
 CMD /app/start.sh

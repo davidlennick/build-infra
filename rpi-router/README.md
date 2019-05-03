@@ -18,21 +18,23 @@ sudo balena push <ip> -s .
 
 ```
 ssh root@<ip> -p 22222
-kill $(ps | egrep -m 1 dns |  awk '{ print $1; }')
+
+# kill balenaOS dnsmasq instance after the build is complete
+kill $(ps | egrep -m 1 dns |  awk '{ print $1; }') 
 ```
 
 ## setup
-
+```
 modem --- wan if --- rpi --- lan if --- lan
                       |
                        ----- lab if --- lab
-
+```
 
 ## containers
 
 ### router-admin
 
-- deian image with `webmin` installed
+- debian image with `webmin` installed
 - reassigns eth devices by MAC address using the environment variables in the compose file
     - `WAN_IF_MAC=<mac_goes_here>`
     - `LAN_IF_MAC=<mac_goes_here>`
@@ -76,8 +78,9 @@ ps | grep dns
 
 /usr/bin/dnsmasq -x /run/dnsmasq.pid -a 127.0.0.2,10.114.102.1 -7 /etc/dnsmasq.d/ -r /etc/resolv.dnsmasq -z
 
-
+ssh root@192.168.1.230 -p 22222
 kill $(ps | egrep -m 1 dns |  awk '{ print $1; }')
+balena restart dhcp_3_1 
 
 balena exec -it router_2_1 /bin/bash
 

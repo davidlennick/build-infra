@@ -15,9 +15,6 @@ ip addr add 192.168.9.1/24 brd 192.168.9.255 dev lan
 echo "Setting wan MTU"
 ip link set wan mtu 1500
 
-echo 'to lock this down, \n iptables -P INPUT DROP \n iptables -P FORWARD DROP \n iptables -P OUTPUT DROP'
-
-
-
+echo "Starting webmin..."
 service webmin start 
 tail -F /var/webmin/miniserv.error
