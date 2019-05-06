@@ -1,6 +1,8 @@
 version: '2'
+
 volumes:
   dhcp-data:
+
 services:
   utils:
     build: ./utils
@@ -8,31 +10,40 @@ services:
     privileged: true
     cap_add:
       - NET_ADMIN
-      - NET_RAW
+      - NET_RAW  
+ 
   router:
     build: ./router-admin
-    #privileged: true
     network_mode: host
-    ports:
-      - "10.0.0.1:10000:10000"
     cap_add:
       - NET_ADMIN
       - NET_RAW
+    ports:
+      - "10.0.0.1:10000:10000"
     environment:
       - WAN_IF_MAC=b8:27:eb:7a:52:e0
       - LAN_IF_MAC=00:e0:4c:69:c9:a3
-      - LAB_IF_MAC=00:e0:4c:69:c8:cb
+      - LAB_IF_MAC=00:e0:4c:69:c8:cb  
+    
   dhcp:
     build: ./dhcp
     network_mode: host 
     cap_add:
       - NET_ADMIN
-      - NET_RAW
+      - NET_RAW    
     ports:
       - "53:53/udp"
       - "67:67/udp"
       - "68:68/udp"
-    restart: always
+
+  dyndns:
+    build: ./dyndns
+    environment: 
+      - NOIP_UN="user"
+      - NOIP_PW="pass"
+      - NOIP_DOMAINS="domain"
+      - NOIP_INTERVAL="15m"
+      - LOG_DIR="/app"
 
   # # https://github.com/blacktop/docker-zeek/blob/master/docs/usage.md
   # ids:

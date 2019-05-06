@@ -85,3 +85,11 @@ balena restart dhcp_3_1
 balena exec -it router_2_1 /bin/bash
 
 ip addr flush 
+
+
+iptables -P INPUT ACCEPT
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+
+balena kill router_2_1

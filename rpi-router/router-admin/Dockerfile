@@ -1,4 +1,5 @@
-FROM balenalib/raspberrypi3
+ARG BASE="balenalib/raspberrypi3"
+FROM ${BASE}
 
 # webmin apt-show-versions fix
 # https://askubuntu.com/questions/916199/install-apt-show-versions-inside-an-ubuntu-docker-container
