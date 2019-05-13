@@ -7,9 +7,26 @@ red_print () {
     echo -e "\n\n${RED}$1\n########################################################${NC}\n\n"
 }
 
+
 red_print "Installing deps..."
 
 sudo -S apt update && sudo -S apt install curl git apt-transport-https ca-certificates curl software-properties-common
+
+red_print "Installing SSH server..."
+sudo apt install openssh-server
+
+
+red_print "Changing hostname to build-k8s..."
+
+# new hostname
+NEW_HN="build-k8s"
+OLD_HN=$(sudo -S cat /etc/hostname)
+sudo sed -i "s/$OLD_HN/$NEW_HN/g" /etc/hosts
+sudo sed -i "s/$OLD_HN/$NEW_HN/g" /etc/hostname
+
+
+
+
 
 red_print "Removing previous versions of Docker..."
 sudo -S apt-get purge -y docker docker-ce docker-engine docker.io containerd runc
