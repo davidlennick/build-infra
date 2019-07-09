@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    kubernetes.io/ingress.class: nginx
+  labels:
+    app: nginx
+  name: nginx-sandbox-mycompany-com
+  namespace: default
+spec:
+  tls:
+  - hosts:
+    - nginx.sandbox.mycompany.com
+    secretName: nginx-sandbox-mycompany-com-tls
+  rules:
+  - host: nginx.sandbox.mycompany.com
+    http:
+      paths:
+      - backend:
+          serviceName: nginx
+          servicePort: http
+        path: /
