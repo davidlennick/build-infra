@@ -1,12 +1,79 @@
 #!/bin/bash
-kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.7/deploy/manifests/00-crds.yaml
+RED='\033[0;31m'
+NC='\033[0m'
 
-kubectl create namespace cert-manager
-kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+red_print () {
+  echo -e "\n\n${RED}$1\n########################################################${NC}\n\n"
+}
+
+
+red_print "Updating helm"
+helm repo update
+
+
+# nginx ingress
+########################
+
+red_print "Installing nginx-ingress helm chart"
+
+helm install --name ingress stable/nginx-ingress \
+--set controller.hostNetwork=true \
+--set controller.dnsPolicy=ClusterFirstWithHostNet \
+--set controller.service.type=NodePort #\ 
+#--set controller.service.externalTrafficPolicy=Local
+
+
+# cert-manager
+########################
+
+red_print "Adding cert-manager chart repo"
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
-helm install \
-  --name cert-manager \
-  --namespace cert-manager \
-  --version v0.7.2 \
-  jetstack/cert-manager
+
+
+red_print "Installing cert-manager dependent resources and namespace"
+
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.8/deploy/manifests/00-crds.yaml
+kubectl create namespace cert-manager
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+
+
+red_print "Installing cert-manager helm chart"
+helm install --name cert-manager --namespace cert-manager \
+-f cert-manager.yml jetstack/cert-manager \
+--version v0.8.0
+
+
+red_print "Sleeping for a bit to let k8s do its thing with cert manager"
+sleep 15
+
+
+# Apply clusterissuers and ingress definition 
+################################################
+
+red_print "Adding cert-manager ClusterIssuers for Let's Encrypt (prod and staging)"
+kubectl create -f letsencrypt.staging.yml
+kubectl create -f letsencrypt.prod.yml
+
+# kubectl apply -f demo.yml
+
+red_print "Installing ingress def using staging issuer"
+#kubectl apply -f ingress.staging.yml
+kubectl apply -f ingress.prod.yml
+
+# Print some stuff 
+################################################
+red_print "Sleeping for a bit to let k8s do its thing with ClusterIssuers"
+sleep 15
+
+red_print "Printing ingress"
+kubectl describe ingress
+
+red_print "Printing clusterissuers"
+kubectl describe clusterissuer
+
+red_print "Printing certs"
+kubectl describe certificate
+
+
+red_print "\n########################################################\nTo use prod certs instead, kubectl apply -f ingress.prod.yml"
