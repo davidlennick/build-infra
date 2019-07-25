@@ -22,11 +22,6 @@ SensorReading SensorReader::reading() { return this->reading_; }
 
 uint8_t SensorReader::addr() { return this->addr_; }
 
-// String SensorReader::GetAddrString() {
-  
-//   //itoa(this->addr, buffer, 10);
-// }
-
 void SensorReader::UpdateReading() {
   this->reading_.shunt_V = this->sensor_.getShuntVoltage_mV();
   this->reading_.bus_V = this->sensor_.getBusVoltage_V();
