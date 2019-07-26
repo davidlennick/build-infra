@@ -35,26 +35,26 @@ SensorReading SensorReader::GetUpdatedReading() {
   return this->reading();
 }
 
-void SensorReader::PrintCurrentReading() {
-  Serial.print("Bus Voltage:   ");
-  Serial.print(this->reading_.bus_V);
-  Serial.println(" V");
-  Serial.print("Shunt Voltage: ");
-  Serial.print(this->reading_.shunt_V);
-  Serial.println(" mV");
-  Serial.print("Load Voltage:  ");
-  Serial.print(this->reading_.load_V);
-  Serial.println(" V");
-  Serial.print("Current:       ");
-  Serial.print(this->reading_.current_mA);
-  Serial.println(" mA");
-  Serial.print("Power:         ");
-  Serial.print(this->reading_.power_mW);
-  Serial.println(" mW");
-  Serial.println("");
-}
-
 void SensorReader::PrintUpdatedReading() {
   this->UpdateReading();
-  this->PrintCurrentReading();
+  SensorReader::PrintSensorReading(this->reading());
+}
+
+// static
+void SensorReader::PrintSensorReading(SensorReading reading) {
+  Serial.print("Bus Voltage:   ");
+  Serial.print(reading.bus_V);
+  Serial.println(" V");
+  Serial.print("Shunt Voltage: ");
+  Serial.print(reading.shunt_V);
+  Serial.println(" mV");
+  Serial.print("Load Voltage:  ");
+  Serial.print(reading.load_V);
+  Serial.println(" V");
+  Serial.print("Current:       ");
+  Serial.print(reading.current_mA);
+  Serial.println(" mA");
+  Serial.print("Power:         ");
+  Serial.print(reading.power_mW);
+  Serial.println(" mW");
 }

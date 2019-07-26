@@ -10,14 +10,19 @@ class SensorReader {
   SensorReader();
   SensorReader(uint8_t addr);
   SensorReader(uint8_t addr, Adafruit_INA219 sensor);
+
+  // accessors
   Adafruit_INA219 sensor();
   SensorReading reading();
   uint8_t addr();
-  String GetAddrString();
-  SensorReading GetUpdatedReading();
+
+  // methods
   void UpdateReading();
-  void PrintCurrentReading();
+  SensorReading GetUpdatedReading();
   void PrintUpdatedReading();
+
+  // static methods
+  static void PrintSensorReading(SensorReading reading);
 
  private:
   uint8_t addr_;
