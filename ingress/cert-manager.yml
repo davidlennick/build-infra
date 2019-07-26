@@ -1,0 +1,10 @@
+# podDnsPolicy: "None"
+# podDnsConfig:
+#   nameservers:
+#     - "1.1.1.1"
+#     - "8.8.8.8"
+
+# extraArgs: [--dns01-recursive-nameservers-only]
+# ingressShim:
+#   defaultIssuerName: letsencrypt-staging
+#   defaultIssuerKind: ClusterIssuer
