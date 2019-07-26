@@ -4,14 +4,11 @@
 
 // wrapper/facade class to shorten some of the wifi library stuff
 
-WiFiManager::WiFiManager() {  }
+WiFiManager::WiFiManager() {}
 
-WiFiNetwork WiFiManager::current_network() {
-  return this->network_;
-}
+WiFiNetwork WiFiManager::current_network() { return this->network_; }
 
-void WiFiManager::Init() {  
-
+void WiFiManager::Init() {
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
@@ -43,7 +40,7 @@ bool WiFiManager::ConnectWiFi() {
     counter++;
   }
 
-  if (this->status_ == WL_CONNECTED){
+  if (this->status_ == WL_CONNECTED) {
     Serial.println("Connected to WiFi!");
     return true;
   }
@@ -51,8 +48,7 @@ bool WiFiManager::ConnectWiFi() {
   return false;
 }
 
-
-void WiFiManager::UpdateCurrentNetwork(){
+void WiFiManager::UpdateCurrentNetwork() {
   this->network_.ssid = WiFi.SSID();
   this->network_.rssi = WiFi.RSSI();
   WiFi.BSSID(this->network_.bssid);
@@ -62,7 +58,7 @@ void WiFiManager::UpdateCurrentNetwork(){
 void WiFiManager::PrintWiFiClientData() {
   // print your board's IP address:
   byte mac[6];
-  
+
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 
@@ -74,8 +70,6 @@ void WiFiManager::PrintCurrentNetwork() {
   this->UpdateCurrentNetwork();
   WiFiManager::PrintNetwork(this->network_);
 }
-
-
 
 // static methods
 
@@ -92,14 +86,13 @@ void WiFiManager::PrintMACAddress(byte mac[]) {
   Serial.println();
 }
 
-void WiFiManager::PrintNetwork(WiFiNetwork network){
-
+void WiFiManager::PrintNetwork(WiFiNetwork network) {
   Serial.print("SSID: ");
   Serial.println(network.ssid);
-  
+
   Serial.print("BSSID: ");
   WiFiManager::PrintMACAddress(network.bssid);
-  
+
   Serial.print("Signal Strength (RSSI):");
   Serial.print(network.rssi);
   Serial.println(" dBm");

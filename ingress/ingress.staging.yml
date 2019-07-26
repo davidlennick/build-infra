@@ -10,10 +10,8 @@ spec:
   tls:
   - hosts:
     - build.lennick.ca
-    #- jenkins.build.lennick.ca
     secretName: letsencrypt-staging
   rules:
-  # cni rules
   - host: build.lennick.ca
     http:
       paths:

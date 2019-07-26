@@ -12,7 +12,6 @@ spec:
     - build.lennick.ca
     secretName: letsencrypt-prod
   rules:
-  # cni rules
   - host: build.lennick.ca
     http:
       paths:

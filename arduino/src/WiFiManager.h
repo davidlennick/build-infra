@@ -2,8 +2,8 @@
 #define WIFIMANAGER_H_
 
 #include "WiFiNINA.h"
-#include "arduino_secrets.h"
 #include "WiFiNetwork.h"
+#include "arduino_secrets.h"
 
 class WiFiManager {
  public:

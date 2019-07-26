@@ -6,7 +6,7 @@
 
 struct WiFiNetwork {
   String ssid;
-  byte bssid[6];  
+  byte bssid[6];
   long rssi;
   byte encryption;
 };
