@@ -23,11 +23,11 @@ SensorReading SensorReader::reading() { return this->reading_; }
 uint8_t SensorReader::addr() { return this->addr_; }
 
 void SensorReader::UpdateReading() {
-  this->reading_.shunt_V = this->sensor_.getShuntVoltage_mV();
+  this->reading_.shunt_mV = this->sensor_.getShuntVoltage_mV();
   this->reading_.bus_V = this->sensor_.getBusVoltage_V();
   this->reading_.current_mA = this->sensor_.getCurrent_mA();
   this->reading_.power_mW = this->sensor_.getPower_mW();
-  this->reading_.load_V = this->reading_.bus_V + (this->reading_.shunt_V / 1000);
+  this->reading_.load_V = this->reading_.bus_V + (this->reading_.shunt_mV / 1000);
 }
 
 SensorReading SensorReader::GetUpdatedReading() {
@@ -46,7 +46,7 @@ void SensorReader::PrintSensorReading(SensorReading reading) {
   Serial.print(reading.bus_V);
   Serial.println(" V");
   Serial.print("Shunt Voltage: ");
-  Serial.print(reading.shunt_V);
+  Serial.print(reading.shunt_mV);
   Serial.println(" mV");
   Serial.print("Load Voltage:  ");
   Serial.print(reading.load_V);

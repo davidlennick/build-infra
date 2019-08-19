@@ -7,8 +7,8 @@ class MQTTManager {
 
  public:
 
-  MQTTManager(PubSubClient client);
-  MQTTManager(PubSubClient client, char* admin_topic);
+  MQTTManager(PubSubClient* client);
+  MQTTManager(PubSubClient* client, char* admin_topic);
 
   String admin_topic();
   void admin_topic(char* topic);
@@ -19,7 +19,7 @@ class MQTTManager {
   static void PrintPayload(byte* payload, unsigned int length);
 
  private:
-  PubSubClient client_;
+  PubSubClient* client_;
   char* admin_topic_ = "arduino";
 };
 

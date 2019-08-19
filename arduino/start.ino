@@ -24,32 +24,34 @@ WiFiManager wifi_manager;
 
 IPAddress broker_ip(10, 0, 0, 175);
 int broker_port = 31883;
-PubSubClient mqtt_client(wifi_client);
-MQTTManager mqtt_manager(mqtt_client);
+PubSubClient* mqtt_client;
+MQTTManager* mqtt_manager;
 
 const size_t capacity = JSON_OBJECT_SIZE(5);
 DynamicJsonDocument doc(capacity);
 char buffer[512];
 
 void setup(void) {
+
   // init and wait for serial connection
   Serial.begin(19200);
   while (!Serial) {
   }
-  // mqtt_client = new MQTTManager(*mqtt_client);
 
   // start the INA219 sensors by address
-
   readers[0] = new SensorReader(0x40);
   readers[1] = new SensorReader(0x41);
   readers[2] = new SensorReader(0x44);
   readers[3] = new SensorReader(0x45);
 
-  // init mqtt client
-  mqtt_client.setServer(broker_ip, broker_port);
-  mqtt_client.setCallback(MQTTManager::CallbackHandler);
+  mqtt_client = new PubSubClient(wifi_client);
+  mqtt_manager = new MQTTManager(mqtt_client, "arduinoMonitor");
 
-  // initWiFi
+  // init mqtt client
+  mqtt_client->setServer(broker_ip, broker_port);
+  mqtt_client->setCallback(MQTTManager::CallbackHandler);
+
+  // init WiFi
   wifi_manager.Init();
   wifi_manager.ConnectWiFi();
 
@@ -66,8 +68,8 @@ void loop(void) {
   int delayVal = 1000;
   SensorReading tmp;
 
-  if (!mqtt_client.connected()) {
-    reconnect();
+  if (!mqtt_client->connected()) {
+    mqtt_manager->Reconnect();
   }
 
   // wtf arduino...
@@ -79,7 +81,7 @@ void loop(void) {
 
     doc["addr"] = readers[i]->addr();
     doc["bus_V"] = tmp.bus_V;
-    doc["shunt_V"] = tmp.shunt_V;
+    doc["shunt_mV"] = tmp.shunt_mV;
     doc["load_V"] = tmp.load_V;
     doc["current_mA"] = tmp.current_mA;
     doc["power_mW"] = tmp.power_mW;
@@ -88,7 +90,7 @@ void loop(void) {
     Serial.println();
 
     serializeJson(doc, buffer);
-    mqtt_client.publish("outTopic", buffer);
+    mqtt_client->publish("outTopic", buffer);
 
   }
 
@@ -97,29 +99,3 @@ void loop(void) {
   delay(delayVal);
 }
 
-// abstract this out later
-void reconnect() {
-  // Loop until we're reconnected
-  while (!mqtt_client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-
-    if (mqtt_client.connect("arduinoClient")) {
-      Serial.println("connected");
-
-      // Once connected, publish an announcement...
-      mqtt_client.publish("outTopic", "hello world");
-
-      // ... and resubscribe
-      mqtt_client.subscribe("inTopic");
-    }
-    else {
-      Serial.print("failed, rc=");
-      Serial.print(mqtt_client.state());
-      Serial.println(" try again in 5 seconds");
-
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-}
