@@ -7,7 +7,7 @@
 
 class WiFiManager {
  public:
-  WiFiManager();
+  WiFiManager(WiFiClient* client);
   WiFiNetwork current_network();
   void Init();
   bool ConnectWiFi();
@@ -25,7 +25,7 @@ class WiFiManager {
   static void PrintNetwork(WiFiNetwork network);
 
  private:
-  int status_;
+  WiFiClient* client_;
   WiFiNetwork network_;
 };
 

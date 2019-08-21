@@ -35,6 +35,10 @@ SensorReading SensorReader::GetUpdatedReading() {
   return this->reading();
 }
 
+String SensorReader::GetAddrAsString() {
+  return String(this->addr(), HEX);
+}
+
 void SensorReader::PrintUpdatedReading() {
   this->UpdateReading();
   SensorReader::PrintSensorReading(this->reading());

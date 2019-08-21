@@ -4,12 +4,12 @@
 
 // wrapper/facade class to shorten some of the wifi library stuff
 
-WiFiManager::WiFiManager() {}
+WiFiManager::WiFiManager(WiFiClient* client) { this->client_ = client; }
 
 WiFiNetwork WiFiManager::current_network() { return this->network_; }
 
 void WiFiManager::Init() {
-  if (WiFi.status() == WL_NO_MODULE) {
+  if (this->client_->status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
     while (true) {
@@ -27,20 +27,19 @@ bool WiFiManager::ConnectWiFi() {
   // attempt to connect to WiFi network:
   byte counter = 0;
   byte attempt_limit = 5;
-  this->status_ = WL_IDLE_STATUS;
 
-  while (this->status_ != WL_CONNECTED && counter < attempt_limit) {
+  while (WiFi.status() != WL_CONNECTED && counter < attempt_limit) {
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(SECRET_SSID);
 
     // Connect to WPA/WPA2 network:
-    this->status_ = WiFi.begin(SECRET_SSID, SECRET_PASS);
+    WiFi.begin(SECRET_SSID, SECRET_PASS);
 
-    delay(10000);
+    delay(5000);
     counter++;
   }
 
-  if (this->status_ == WL_CONNECTED) {
+  if (this->client_->status() == WL_CONNECTED) {
     Serial.println("Connected to WiFi!");
     return true;
   }

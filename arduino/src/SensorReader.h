@@ -19,6 +19,7 @@ class SensorReader {
   // methods
   void UpdateReading();
   SensorReading GetUpdatedReading();
+  String GetAddrAsString();
   void PrintUpdatedReading();
 
   // static methods
