@@ -13,7 +13,7 @@ String MQTTManager::admin_topic() { return this->admin_topic_; }
 void MQTTManager::admin_topic(char* topic) { this->admin_topic_ = topic; }
 
 void MQTTManager::Reconnect() {
-  
+  this->client_->disconnect();
   // Loop until we're reconnected
   while (!this->client_->connected()) {
     Serial.print("Attempting MQTT connection...");

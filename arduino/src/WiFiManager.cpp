@@ -1,56 +1,88 @@
+#include "WiFiNINA.h"
 #include "WiFiManager.h"
 
 // https://www.arduino.cc/en/Reference/WiFiNINA
 
 // wrapper/facade class to shorten some of the wifi library stuff
 
-WiFiManager::WiFiManager(WiFiClient* client) { this->client_ = client; }
+WiFiManager::WiFiManager(WiFiClient* client) {
+  this->wifi_ = new WiFiClass(); 
+  this->client_ = client; 
+}
 
 WiFiNetwork WiFiManager::current_network() { return this->network_; }
 
+WiFiClass* WiFiManager::wifi() {
+  return this->wifi_;
+}
+
 void WiFiManager::Init() {
-  if (this->client_->status() == WL_NO_MODULE) {
+  if (this->wifi_->status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
     // don't continue
     while (true) {
     }
   }
 
-  if (WiFi.firmwareVersion() != WIFI_FIRMWARE_LATEST_VERSION) {
+  if (this->wifi_->firmwareVersion() != WIFI_FIRMWARE_LATEST_VERSION) {
     Serial.println("Please upgrade firmware");
-    Serial.println(WiFi.firmwareVersion());
+    Serial.println(this->wifi_->firmwareVersion());
     Serial.println(WIFI_FIRMWARE_LATEST_VERSION);
   }
 }
 
-bool WiFiManager::ConnectWiFi() {
+bool WiFiManager::ConnectWiFi(byte attempt_limit=5) {
   // attempt to connect to WiFi network:
   byte counter = 0;
-  byte attempt_limit = 5;
+  bool conn_stat = this->IsWiFiConnected();
 
-  while (WiFi.status() != WL_CONNECTED && counter < attempt_limit) {
-    Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(SECRET_SSID);
-
+  while (conn_stat == false && counter < attempt_limit) {
+    Serial.println();
+    Serial.print("Attempting to connect to WPA SSID ");
+    Serial.print(SECRET_SSID);
+    Serial.println();
+    this->wifi_->disconnect();
     // Connect to WPA/WPA2 network:
-    WiFi.begin(SECRET_SSID, SECRET_PASS);
+    this->wifi_->begin(SECRET_SSID, SECRET_PASS);
 
-    delay(5000);
+    // allow dropout of loop on WL_CONNECT
+    for (byte i = 0; i < 10; i++) {
+      
+      conn_stat = this->IsWiFiConnected();
+
+      if (!conn_stat) {
+        Serial.print(".");
+        delay(1000);
+      } 
+      else {
+        return conn_stat;
+      }     
+    }
+
     counter++;
   }
+       
+  return this->IsWiFiConnected();
 
-  if (this->client_->status() == WL_CONNECTED) {
-    Serial.println("Connected to WiFi!");
+}
+
+bool WiFiManager::IsWiFiConnected() {
+  Serial.print("Checking WiFi connection status: ");
+  Serial.print(this->wifi_->status());
+  if (this->wifi_->status() == WL_CONNECTED) {
+    Serial.println(" true");
     return true;
   }
-
+  else {
+    Serial.println(" false");
+  }
   return false;
 }
 
 void WiFiManager::UpdateCurrentNetwork() {
-  this->network_.ssid = WiFi.SSID();
-  this->network_.rssi = WiFi.RSSI();
-  WiFi.BSSID(this->network_.bssid);
+  this->network_.ssid = this->wifi_->SSID();
+  this->network_.rssi = this->wifi_->RSSI();
+  this->wifi_->BSSID(this->network_.bssid);
   this->network_.encryption = WiFi.encryptionType();
 }
 
@@ -59,10 +91,10 @@ void WiFiManager::PrintWiFiClientData() {
   byte mac[6];
 
   Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(this->wifi_->localIP());
 
   Serial.print("MAC address: ");
-  WiFiManager::PrintMACAddress(WiFi.macAddress(mac));
+  WiFiManager::PrintMACAddress(this->wifi_->macAddress(mac));
 }
 
 void WiFiManager::PrintCurrentNetwork() {

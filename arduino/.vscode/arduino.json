@@ -1,7 +1,6 @@
 {
     "sketch": "start.ino",
-    "board": "arduino:megaavr:uno2018",
-    "configuration": "mode=off",
+    "board": "arduino:avr:uno",
     "programmer": "Arduino as ISP",
     "output": "build",
     "port": "/dev/ttyACM0"

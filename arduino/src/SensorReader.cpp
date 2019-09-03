@@ -22,21 +22,26 @@ SensorReading SensorReader::reading() { return this->reading_; }
 
 uint8_t SensorReader::addr() { return this->addr_; }
 
+String SensorReader::GetAddrAsString() {
+  return String(this->addr(), HEX);
+}
+
 void SensorReader::UpdateReading() {
+  //delay(100);
   this->reading_.shunt_mV = this->sensor_.getShuntVoltage_mV();
+  //delay(100);
   this->reading_.bus_V = this->sensor_.getBusVoltage_V();
+  //delay(100);
   this->reading_.current_mA = this->sensor_.getCurrent_mA();
+  //delay(100);
   this->reading_.power_mW = this->sensor_.getPower_mW();
+
   this->reading_.load_V = this->reading_.bus_V + (this->reading_.shunt_mV / 1000);
 }
 
 SensorReading SensorReader::GetUpdatedReading() {
   this->UpdateReading();
   return this->reading();
-}
-
-String SensorReader::GetAddrAsString() {
-  return String(this->addr(), HEX);
 }
 
 void SensorReader::PrintUpdatedReading() {

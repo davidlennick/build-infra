@@ -3,12 +3,15 @@
         {
             "name": "Linux",
             "includePath": [
+                "/home/user/Downloads/arduino-1.8.9/tools/**",
+                "/home/user/Downloads/arduino-1.8.9/hardware/arduino/avr/**",
                 "${workspaceRoot}",
                 "${workspaceRoot}/src",
                 "/home/user/.arduino15/**",
                 "/home/user/Arduino/libraries/**",
                 "/home/user/.arduino15/packages/arduino/hardware/megaavr/1.8.3/**",
-                "/home/user/.arduino15/packages/arduino/tools/**"
+                "/home/user/.arduino15/packages/arduino/tools/**",
+                "/home/user/.arduino15/packages/arduino/hardware/megaavr/1.8.4/**"
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": false,
@@ -20,7 +23,7 @@
                 ]
             },
             "forcedInclude": [
-                "/home/user/.arduino15/packages/arduino/hardware/megaavr/1.8.3/cores/arduino/Arduino.h"
+                "/home/user/Downloads/arduino-1.8.9/hardware/arduino/avr/cores/arduino/Arduino.h"
             ],
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",

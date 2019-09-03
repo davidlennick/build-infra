@@ -8,9 +8,13 @@
 class WiFiManager {
  public:
   WiFiManager(WiFiClient* client);
+
   WiFiNetwork current_network();
+  WiFiClass* wifi();
+
   void Init();
-  bool ConnectWiFi();
+  bool ConnectWiFi(byte attempt_limit=5);
+  bool IsWiFiConnected();
   void Disconnect();
   void UpdateCurrentNetwork();
   void PrintWiFiClientData();
@@ -25,6 +29,7 @@ class WiFiManager {
   static void PrintNetwork(WiFiNetwork network);
 
  private:
+  WiFiClass* wifi_;
   WiFiClient* client_;
   WiFiNetwork network_;
 };
