@@ -1,64 +1,45 @@
-#include <string.h>
+#include <Adafruit_INA219.h>
 #include <ArduinoJson.h>
-#include <PubSubClient.h>
-//#include <WiFiNINA.h>
 #include <Ethernet.h>
+#include <PubSubClient.h>
 #include <Wire.h>
-#include "src/MQTTManager.h"
-#include "src/SensorReader.h"
+#include <string.h>
 #include "src/SensorReading.h"
-#include "src/WiFiManager.h"
-
 
 // const config vars
-const uint8_t SENSOR_ADDRS[] = { 0x40, 0x41, 0x44, 0x45 };
-const byte ETH_MAC[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  
+const int NUM_SENSORS = 4;
+const uint8_t SENSOR_ADDRS[] = {0x40, 0x41, 0x44, 0x45};
+const byte ETH_MAC[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 const IPAddress BROKER_IP(10, 0, 0, 175);
 const int BROKER_PORT = 31883;
 const String BASE_TOPIC = "outTopic";
-const int DELAY_VAL = 200;
+const char* ADMIN_TOPIC = "arduinoAdmin";
 
-// ina219 sensor vars
-SensorReader* readers;
+// global vars
+Adafruit_INA219* sensors[NUM_SENSORS];
 SensorReading reading;
-
-// wifi vars (not used)
-WiFiClient* wifi_client;
-WiFiManager* wifi_manager;
-
-// ethernet vars 
-
-
-// mqtt vars
-PubSubClient* mqtt_client;
-MQTTManager* mqtt_manager;
+EthernetClient eth_client;
+PubSubClient mqtt_client(eth_client);
 
 // json vars
 const size_t capacity = JSON_OBJECT_SIZE(6);
 DynamicJsonDocument doc(capacity);
-char json_buffer[512];
-
-// debug vars
-
-int crash_count = 0;
-int msg_count = 0;
-
 
 void setup(void) {
   // init and wait for serial connection
-  Serial.begin(19200);
-  while (!Serial) {
-  }
+  Serial.begin(115200);
+  // while (!Serial) {
+  // }
 
   Serial.println("========================================");
   Serial.println("Starting setup...");
   Serial.println("========================================");
   Serial.println();
 
-  InitSensorReaders();
-  //InitWiFi();
+  InitSensors();
   InitEth();
   InitMQTT();
+
   delay(100);
 
   Serial.println();
@@ -68,123 +49,110 @@ void setup(void) {
 }
 
 void loop(void) {
-  String base_topic = BASE_TOPIC + "/";
-  String addr;
-  String full_topic;
+  String full_topic = "";
+  char json_buffer[100];
+  size_t n;
 
   CheckConn();
 
   // https://www.arduino.cc/reference/en/language/variables/utilities/sizeof/
+  for (byte i = 0; i < (sizeof(sensors) / sizeof(sensors[0])); i++) {
+    full_topic = BASE_TOPIC + "/";
+    reading = GetSensorReading(sensors[i]);
 
-  for (byte i = 0; i < (sizeof(readers) / sizeof(readers[0])); i++) {
-    //reading = readers[i]->GetUpdatedReading();
-    //addr = readers[i]->GetAddrAsString();
-    
     // create the topic to publish to
-    //full_topic = base_topic + addr;
+    full_topic += String(SENSOR_ADDRS[i], HEX);
 
-    // // convert sensor readings to json and print to console
-    //SensorReadingToJson(addr, reading, doc);
-    //PrintReadingJson(doc, full_topic);
+    // convert sensor readings to json and print to console
+    SensorReadingToJson(String(SENSOR_ADDRS[i], HEX), reading, doc);
 
-    // // store the json doc in a buffer
-    //serializeJson(doc, json_buffer);
-    //mqtt_client->publish(full_topic, json_buffer);
-    mqtt_client->publish("outTopic", "{}");
-    msg_count++;
-
-    delay(100);
+    // store the json doc in a buffer, print, and publish
+    n = serializeJson(doc, json_buffer);
+    Serial.print("[");
+    Serial.print(full_topic);
+    Serial.print("] ");
+    Serial.println(json_buffer);
+    mqtt_client.publish((char*)full_topic.c_str(), json_buffer);
   }
-  Serial.print("Free RAM: ");
-  Serial.println(FreeRAM());
-  //delay(500);
 
+  delay(200);
+
+  // Serial.print("Free RAM: ");
+  // Serial.println(FreeRAM());
 }
 
-void InitSensorReaders() {
+void InitSensors() {  
+  
   // start the INA219 sensors by address
   int num_sensors = sizeof(SENSOR_ADDRS) / sizeof(uint8_t);
-  readers = SensorReader[num_sensors];
 
   for (int i = 0; i < num_sensors; i++) {
-    readers[i] = new SensorReader(SENSOR_ADDRS[i]);
+    sensors[i] = new Adafruit_INA219(SENSOR_ADDRS[i]);
+    sensors[i]->begin();
+    delay(100);
   }
-
-  //readers[0] = new SensorReader(0x40);
-  //readers[1] = new SensorReader(0x41);
-  //readers[2] = new SensorReader(0x44);
-  //readers[3] = new SensorReader(0x45);
+  
 }
 
 void InitEth() {
+  Serial.println("Starting eth setup...");
+  // Ethernet.begin(ETH_MAC);
+  
+  if (Ethernet.begin(ETH_MAC) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // no point in carrying on, so do nothing forevermore:
+    while (true) {
+    }
+  }
 
+  Serial.println(Ethernet.localIP());
+  Serial.println("Done eth setup.");
 }
 
-void InitWiFi() {
-  // init WiFi
-  wifi_client = new WiFiClient();
-  wifi_manager = new WiFiManager(wifi_client);
-
-  wifi_manager->Init();
-  wifi_manager->ConnectWiFi();
-
-  Serial.println("\n========================================");
-  wifi_manager->PrintWiFiClientData();
-  wifi_manager->UpdateCurrentNetwork();
-  wifi_manager->PrintCurrentNetwork();
-  Serial.println("========================================\n");
-}
-
-void InitMQTT() {
+void InitMQTT() {  
   // init mqtt client
-  mqtt_client = new PubSubClient(*wifi_client);
-  mqtt_manager = new MQTTManager(mqtt_client, "arduinoMonitor");
-
-  mqtt_client->setServer(BROKER_IP, BROKER_PORT);
-  mqtt_client->setCallback(MQTTManager::CallbackHandler);
-  mqtt_manager->Reconnect();
+  mqtt_client.setServer(BROKER_IP, BROKER_PORT);
+  ReconnectMQTT();
+  
 }
 
 void CheckConn() {
-  
-  if (!wifi_manager->IsWiFiConnected()) {
-    crash_count++;
-    Serial.print("Lost Wifi connection. Status: ");    
-    Serial.println(wifi_manager->wifi()->status());
-    Serial.print("Crash count: ");
-    Serial.println(crash_count);
-    Serial.print("Message count: ");
-    Serial.println(msg_count);
-    Serial.println("Attempting reconnect...");
-    FreeRAM();
-    if (!wifi_manager->ConnectWiFi()) {
-      Serial.println();
-      Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      Serial.print("Failed to reconnect. Please check that ");
-      Serial.print(SECRET_SSID);
-      Serial.println(" is in range and restart device.");
-      Serial.print("Crash count: ");
-      Serial.println(crash_count);
-      Serial.print("Message count: ");
-      Serial.println(msg_count);
-      Serial.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      while (true) {}
-    }
-    else {
-      Serial.println("\n========================================");
-      wifi_manager->PrintWiFiClientData();
-      wifi_manager->UpdateCurrentNetwork();
-      wifi_manager->PrintCurrentNetwork();
-      Serial.println("========================================\n"); 
-      delay(500);   
-      mqtt_manager->Reconnect();
-    }
-  }
-
-  if (!mqtt_client->connected()) {
+  if (!mqtt_client.connected()) {
     Serial.println("Lost MQTT connection, attempting reconnect...");
-    mqtt_manager->Reconnect();
+    ReconnectMQTT();
   }
+}
+
+SensorReading GetSensorReading(Adafruit_INA219* sensor) {
+  SensorReading r;
+  // delay(100);
+  r.shunt_mV = sensor->getShuntVoltage_mV();
+  // delay(100);
+  r.bus_V = sensor->getBusVoltage_V();
+  // delay(100);
+  r.current_mA = sensor->getCurrent_mA();
+  // delay(100);
+  r.power_mW = sensor->getPower_mW();
+  r.load_V = r.bus_V + (r.shunt_mV / 1000);
+  return r;
+}
+
+void PrintSensorReading(SensorReading reading) {
+  Serial.print("Bus Voltage:   ");
+  Serial.print(reading.bus_V);
+  Serial.println(" V");
+  Serial.print("Shunt Voltage: ");
+  Serial.print(reading.shunt_mV);
+  Serial.println(" mV");
+  Serial.print("Load Voltage:  ");
+  Serial.print(reading.load_V);
+  Serial.println(" V");
+  Serial.print("Current:       ");
+  Serial.print(reading.current_mA);
+  Serial.println(" mA");
+  Serial.print("Power:         ");
+  Serial.print(reading.power_mW);
+  Serial.println(" mW");
 }
 
 void SensorReadingToJson(String addr, SensorReading reading, DynamicJsonDocument& doc) {
@@ -196,12 +164,26 @@ void SensorReadingToJson(String addr, SensorReading reading, DynamicJsonDocument
   doc["power_mW"] = reading.power_mW;
 }
 
-void PrintReadingJson(DynamicJsonDocument doc, String topic) {
-  Serial.print("[");
-  Serial.print(topic);
-  Serial.print("] ");
-  serializeJson(doc, Serial);
-  Serial.println();
+void ReconnectMQTT() {
+  while (!mqtt_client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+
+    // Attempt to connect
+    if (mqtt_client.connect("arduinoClient")) {
+      Serial.println("connected");
+
+      // Once connected, publish an announcement...
+      mqtt_client.publish(ADMIN_TOPIC, "hello world");
+    }
+    else {
+      Serial.print("failed, rc=");
+      Serial.print(mqtt_client.state());
+      Serial.println(" try again in 5 seconds");
+
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
 }
 
 // https://forum.arduino.cc/index.php?topic=215334.msg1576106#msg1576106
@@ -209,12 +191,4 @@ int FreeRAM() {
   extern int __heap_start, *__brkval;
   int v;
   return (int)&v - (__brkval == 0 ? (int)&__heap_start : (int)__brkval);
-}
-
-// https://coderwall.com/p/zfmwsg/arduino-string-to-char
-char* StringToChar(String command) {
-  if (command.length() != 0) {
-    char* p = const_cast<char*>(command.c_str());
-    return p;
-  }
 }
