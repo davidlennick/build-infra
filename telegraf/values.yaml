@@ -1,4 +1,84 @@
 service:
-  enabled: true
-  type: NodePort
-  
+  enabled: false 
+config:
+  agent:
+    interval: "1s"
+    round_interval: true
+    metric_batch_size: 1000
+    metric_buffer_limit: 10000
+    collection_jitter: "0s"
+    flush_interval: "1s"
+    flush_jitter: "0s"
+    precision: ""
+    debug: true
+    quiet: false
+    logfile: ""
+    hostname: "$HOSTNAME"
+    omit_hostname: true
+  outputs:
+    - influxdb:
+        urls:
+          - "http://influxdb-deploy.default:8086"
+        database: "telegraf"
+
+    # - influxdb:
+    #     urls:
+    #       - "http://influxdb-deploy.default:8086"
+    #     database: "mqtt_arduino"
+    #     tagexclude:
+    #       - "influxdb_name"
+    #     tagpass:
+    #       - influxdb_name: "mqtt"
+    # - influxdb:
+    #     urls:
+    #       - "http://influxdb-deploy.default:8086"
+    #     database: "docker_targets"
+    #     tagexclude:
+    #       - "influxdb_name"
+    #     tagpass:
+    #       - influxdb_name: "docker"
+
+  inputs:
+    - mqtt_consumer:
+        servers: 
+          - "tcp://mosquitto.default:1883"
+        topics:
+          - "ina219/+"
+        data_format: "json"
+        tags:
+          - influxdb_name: "mqtt"
+    - docker:      
+        name_override: "docker_balena"
+        endpoint: "tcp://10.0.0.136:2375"      # balena
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "balena"
+    - docker:
+        name_override: "docker_hypriot"
+        endpoint: "tcp://10.0.0.195:2375"      # hypriotOS
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "hypriot"
+    - docker:         
+        endpoint: "tcp://10.0.0.198:2375"      # rancher
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "rancher"
+    - docker:
+        endpoint: "tcp://10.0.0.97:2375"       # raspbian-lite
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "raspbian"
+        

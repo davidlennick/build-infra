@@ -12,7 +12,7 @@ const uint8_t SENSOR_ADDRS[] = {0x40, 0x41, 0x44, 0x45};
 const byte ETH_MAC[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
 const IPAddress BROKER_IP(10, 0, 0, 175);
 const int BROKER_PORT = 31883;
-const String BASE_TOPIC = "outTopic";
+const String BASE_TOPIC = "ina219";
 const char* ADMIN_TOPIC = "arduinoAdmin";
 
 // global vars

@@ -1,6 +1,7 @@
 service:
   type: NodePort
   ports:
-  - port: 3000
+  - name: service
+    port: 3000
     targetPort: 3000
-    nodePort: 31002
+    nodePort: 30180
