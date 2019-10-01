@@ -21,7 +21,7 @@ sudo -S sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 
 red_print "Installing k8s"
 #sudo snap install conjure-up --classic
-sudo -S snap install microk8s --classic
+sudo -S snap install --channel=1.15/stable microk8s --classic
 
 
 red_print "Starting microk8s kube-dns service..."
