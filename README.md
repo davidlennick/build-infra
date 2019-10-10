@@ -31,4 +31,4 @@
 
 
 ## kube-mgmt 
-- stuff to install on any client working with the kube cluster (kubectl, helm)
+- stuff to install on any client working with the kube cluster (kubectl, helm, /etc/host updates)

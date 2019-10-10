@@ -2,53 +2,22 @@ service:
   enabled: true
   type: NodePort
   ports:
-  - name: ingest 
-    nodePort: 30099
-    port: 8080
-    targetPort: 8080
-
-
+    - name: httpinput
+      nodePort: 30099
+      port: 8080
+      targetPort: 8080
 config:
   agent:
     interval: "1s"
     round_interval: true
-    metric_batch_size: 1000
-    metric_buffer_limit: 10000
-    collection_jitter: "0s"
     flush_interval: "1s"
-    flush_jitter: "0s"
-    precision: ""
-    debug: true
-    quiet: false
-    logfile: ""
-    hostname: "$HOSTNAME"
     omit_hostname: true
   outputs:
     - influxdb:
         urls:
           - "http://influxdb-deploy.default:8086"
         database: "telegraf"
-
-    # - influxdb:
-    #     urls:
-    #       - "http://influxdb-deploy.default:8086"
-    #     database: "mqtt_arduino"
-    #     tagexclude:
-    #       - "influxdb_name"
-    #     tagpass:
-    #       - influxdb_name: "mqtt"
-    # - influxdb:
-    #     urls:
-    #       - "http://influxdb-deploy.default:8086"
-    #     database: "docker_targets"
-    #     tagexclude:
-    #       - "influxdb_name"
-    #     tagpass:
-    #       - influxdb_name: "docker"
-
   inputs:
-    # - kubernetes:
-    #   url: "http://10.0.0.175:10255"
     - mqtt_consumer:
         servers: 
           - "tcp://mosquitto.default:1883"
@@ -57,7 +26,6 @@ config:
         data_format: "json"
         tags:
           - influxdb_name: "mqtt"
-
     - http_listener_v2:
       - service_address: ":8080"
       - data_format: "json"
@@ -93,4 +61,5 @@ config:
         tags:
           - influxdb_name: "docker"
           - os_name: "raspbian"
+
         
