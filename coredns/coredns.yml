@@ -25,7 +25,7 @@ data:
     }
     lennick.ca {
       hosts {
-        10.0.0.175 lennick.ca build.lennick.ca
+        10.0.0.175 lennick.ca build.lennick.ca registry.lennick.ca
       }
       errors
     }

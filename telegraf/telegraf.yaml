@@ -89,10 +89,18 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - name: httpinput
+    - name: basehttpinput
       nodePort: 30099
       port: 8080
       targetPort: 8080
+    - name: httpinputbucketbench
+      nodePort: 30100
+      port: 8081
+      targetPort: 8081
+    - name: httpinputiozone
+      nodePort: 30101
+      port: 8082
+      targetPort: 8082
   selector:
     app.kubernetes.io/name: telegraf
     app.kubernetes.io/instance: telegraf-deploy

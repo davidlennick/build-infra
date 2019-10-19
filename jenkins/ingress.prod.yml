@@ -10,7 +10,7 @@ spec:
   tls:
   - hosts:
     - build.lennick.ca
-    secretName: letsencrypt-prod
+    secretName: letsencrypt-prod-jenkins
   rules:
   - host: build.lennick.ca
     http:
