@@ -1,7 +1,0 @@
-{
-    "sketch": "start.ino",
-    "board": "arduino:avr:uno",
-    "programmer": "Arduino as ISP",
-    "output": "build",
-    "port": "/dev/ttyACM0"
-}

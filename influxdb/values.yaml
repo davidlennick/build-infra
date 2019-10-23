@@ -15,14 +15,13 @@ initScripts:
   scripts:
     init.iql: |+
       CREATE DATABASE "telegraf" WITH DURATION 30d
-
 persistence:
   enabled: true
   size: 80Gi
-config:
-  retention:
-    enabled: true
-    check_interval: 30m0s
+# config:
+#   retention:
+#     enabled: true
+#     check_interval: 30m0s
 
 # ingress:
 #   enabled: true
