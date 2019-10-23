@@ -35,7 +35,7 @@ cd ../jenkins
 cd ../ingress
 ./init.sh
 
-red_print "Done! You should probably restart btw"
+red_print "Done! You should probably restart"
 
 
 

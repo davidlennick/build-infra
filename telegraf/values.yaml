@@ -1,0 +1,65 @@
+service:
+  enabled: true
+  type: NodePort
+  ports:
+    - name: httpinput
+      nodePort: 30099
+      port: 8080
+      targetPort: 8080
+config:
+  agent:
+    interval: "1s"
+    round_interval: true
+    flush_interval: "1s"
+    omit_hostname: true
+  outputs:
+    - influxdb:
+        urls:
+          - "http://influxdb-deploy.default:8086"
+        database: "telegraf"
+  inputs:
+    - mqtt_consumer:
+        servers: 
+          - "tcp://mosquitto.default:1883"
+        topics:
+          - "ina219/+"
+        data_format: "json"
+        tags:
+          - influxdb_name: "mqtt"
+    - http_listener_v2:
+      - service_address: ":8080"
+      - data_format: "json"
+    - docker:      
+        endpoint: "tcp://10.0.0.136:2375"      # balena
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "balena"
+    - docker:
+        endpoint: "tcp://10.0.0.195:2375"      # hypriotOS
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "hypriot"
+    - docker:    
+        endpoint: "tcp://10.0.0.198:2375"      # rancher
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "rancher"
+    - docker:
+        endpoint: "tcp://10.0.0.97:2375"       # raspbian-lite
+        timeout: "5s"
+        total: true
+        interval: "1s"
+        tags:
+          - influxdb_name: "docker"
+          - os_name: "raspbian"
+
+        

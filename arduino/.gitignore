@@ -1,4 +1,0 @@
-build
-.vscode/ipch
-*.code-workspace
-arduino_secrets.h

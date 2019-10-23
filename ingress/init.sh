@@ -48,7 +48,7 @@ red_print "Sleeping for a bit to let k8s do its thing with cert manager"
 sleep 15
 
 
-# Apply clusterissuers and ingress definition 
+# Apply clusterissuers 
 ################################################
 
 red_print "Adding cert-manager ClusterIssuers for Let's Encrypt (prod and staging)"
@@ -57,23 +57,3 @@ kubectl create -f letsencrypt.prod.yml
 
 # kubectl apply -f demo.yml
 
-red_print "Installing ingress def using staging issuer"
-#kubectl apply -f ingress.staging.yml
-kubectl apply -f ingress.prod.yml
-
-# Print some stuff 
-################################################
-red_print "Sleeping for a bit to let k8s do its thing with ClusterIssuers"
-sleep 15
-
-red_print "Printing ingress"
-kubectl describe ingress
-
-red_print "Printing clusterissuers"
-kubectl describe clusterissuer
-
-red_print "Printing certs"
-kubectl describe certificate
-
-
-red_print "\n########################################################\nTo use prod certs instead, kubectl apply -f ingress.prod.yml"

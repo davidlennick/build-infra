@@ -1,0 +1,32 @@
+service:
+  enabled: true
+  type: NodePort
+  ports:
+  - name: api
+    nodePort: 30086
+    port: 8086          # api
+    targetPort: 8086     
+  - name: rpc
+    nodePort: 30088
+    port: 8088          # rpc
+    targetPort: 8088    
+initScripts:
+  enabled: true
+  scripts:
+    init.iql: |+
+      CREATE DATABASE "telegraf" WITH DURATION 30d
+persistence:
+  enabled: true
+  size: 80Gi
+# config:
+#   retention:
+#     enabled: true
+#     check_interval: 30m0s
+
+# ingress:
+#   enabled: true
+#   tls: false
+
+
+#      CREATE DATABASE "mqtt_arduino" WITH DURATION 30d
+#      CREATE DATABASE "docker_targets" WITH DURATION 30d

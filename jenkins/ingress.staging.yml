@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: build-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: letsencrypt-staging
+    certmanager.k8s.io/acme-challenge-type: http01
+spec:
+  tls:
+  - hosts:
+    - build.lennick.ca
+    secretName: letsencrypt-staging
+  rules:
+  - host: build.lennick.ca
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jenkins-build
+          servicePort: 8080

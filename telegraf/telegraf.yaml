@@ -1,0 +1,147 @@
+# Source: telegraf/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: telegraf-deploy
+  labels:
+    app.kubernetes.io/name: telegraf
+    helm.sh/chart: telegraf-1.1.5
+    app.kubernetes.io/instance: telegraf-deploy
+    app.kubernetes.io/managed-by: Tiller
+data:
+  telegraf.conf: |+
+    
+    [agent]
+      collection_jitter = "0s"
+      debug = false
+      flush_interval = "1s"
+      flush_jitter = "0s"
+      hostname = "$HOSTNAME"
+      interval = "1s"
+      logfile = ""
+      metric_batch_size = 1000
+      metric_buffer_limit = 10000
+      omit_hostname = true
+      precision = ""
+      quiet = false
+      round_interval = true
+    
+    [[outputs.influxdb]]
+      database = "telegraf"
+      urls = [
+        "http://influxdb-deploy.default:8086"
+      ]
+    [[inputs.mqtt_consumer]]
+      data_format = "json"
+      servers = [
+        "tcp://mosquitto.default:1883"
+      ]
+      tags = []
+      topics = [
+        "ina219/+"
+      ]
+    [[inputs.http_listener_v2]]
+      service_address = ":8080"
+      data_format = "json"
+      tag_keys = [                
+        "host",
+        "type"
+      ]
+    [[inputs.docker]]
+      endpoint = "tcp://10.0.0.136:2375"
+      interval = "2s"
+      tags = [
+      ]
+      timeout = "5s"
+      total = true
+    [[inputs.docker]]
+      endpoint = "tcp://10.0.0.195:2375"
+      interval = "2s"
+      tags = [
+      ]
+      timeout = "5s"
+      total = true
+    [[inputs.docker]]
+      endpoint = "tcp://10.0.0.198:2375"
+      interval = "2s"
+      tags = [
+      ]
+      timeout = "5s"
+      total = true
+    [[inputs.docker]]
+      endpoint = "tcp://10.0.0.97:2375"
+      interval = "2s"
+      tags = [
+      ]
+      timeout = "5s"
+      total = true
+---
+# Source: telegraf/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: telegraf-deploy
+  labels:
+    app.kubernetes.io/name: telegraf
+    helm.sh/chart: telegraf-1.1.5
+    app.kubernetes.io/instance: telegraf-deploy
+    app.kubernetes.io/managed-by: Tiller
+spec:
+  type: NodePort
+  ports:
+    - name: basehttpinput
+      nodePort: 30099
+      port: 8080
+      targetPort: 8080
+    - name: httpinputbucketbench
+      nodePort: 30100
+      port: 8081
+      targetPort: 8081
+    - name: httpinputiozone
+      nodePort: 30101
+      port: 8082
+      targetPort: 8082
+  selector:
+    app.kubernetes.io/name: telegraf
+    app.kubernetes.io/instance: telegraf-deploy
+---
+# Source: telegraf/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegraf-deploy
+  labels:
+    app.kubernetes.io/name: telegraf
+    helm.sh/chart: telegraf-1.1.5
+    app.kubernetes.io/instance: telegraf-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: telegraf
+      app.kubernetes.io/instance: telegraf-deploy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: telegraf
+        app.kubernetes.io/instance: telegraf-deploy
+    spec:
+      containers:
+      - name: telegraf
+        image: "telegraf:1.10-alpine"
+        imagePullPolicy: "IfNotPresent"
+        resources:
+          {}
+        ports:
+        - containerPort: 8080  
+        env:
+        - name: HOSTNAME
+          value: telegraf-polling-service
+               
+        volumeMounts:
+        - name: config
+          mountPath: /etc/telegraf
+      volumes:
+      - name: config
+        configMap:
+          name: telegraf-deploy
