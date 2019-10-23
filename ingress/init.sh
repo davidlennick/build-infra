@@ -57,4 +57,3 @@ kubectl create -f letsencrypt.prod.yml
 
 # kubectl apply -f demo.yml
 
-
